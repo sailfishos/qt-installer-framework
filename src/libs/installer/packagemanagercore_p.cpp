@@ -582,7 +582,7 @@ void PackageManagerCorePrivate::initialize(const QHash<QString, QString> &params
         m_localPackageHub->setApplicationVersion(QLatin1String(QUOTE(IFW_REPOSITORY_FORMAT_VERSION)));
 
     if (isInstaller())
-        m_packageSources.insert(PackageSource(QUrl(QLatin1String("resource://metadata/")), 0));
+        m_packageSources.insert(PackageSource(QUrl(QLatin1String("resource://metadata/")), 99));
 
     m_metadataJob.disconnect();
     m_metadataJob.setAutoDelete(false);
@@ -2285,7 +2285,7 @@ bool PackageManagerCorePrivate::addUpdateResourcesFromRepositories(bool parseChe
         m_updates = false;
         m_updateSourcesAdded = false;
         if (isInstaller())
-            m_packageSources.insert(PackageSource(QUrl(QLatin1String("resource://metadata/")), 0));
+            m_packageSources.insert(PackageSource(QUrl(QLatin1String("resource://metadata/")), 99));
     }
 
     foreach (const Metadata &data, metadata) {
