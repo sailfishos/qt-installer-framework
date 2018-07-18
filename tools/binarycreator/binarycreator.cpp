@@ -57,6 +57,19 @@
 
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>
+
+# if __MAC_OS_X_VERSION_MAX_ALLOWED < 101200
+# define FAT_MAGIC_64 0xcafebabf
+# define FAT_CIGAM_64 0xbfbafeca
+struct fat_arch_64 {
+    cpu_type_t cputype;
+    cpu_subtype_t cpusubtype;
+    uint64_t offset;
+    uint64_t size;
+    uint32_t align;
+    uint32_t reserved;
+};
+# endif
 #endif
 
 using namespace QInstaller;
