@@ -1190,7 +1190,7 @@ void Component::setInstalled()
 
     \sa {component::isAutoDependOn}{component.isAutoDependOn}
 */
-bool Component::isAutoDependOn(const QSet<QString> &componentsToInstall) const
+bool Component::isAutoDependOn(const QHash<QString, Component *> &componentsToInstall) const
 {
     // If there is no auto depend on value or the value is empty, we have nothing todo. The component does
     // not need to be installed as an auto dependency.
@@ -1198,18 +1198,37 @@ bool Component::isAutoDependOn(const QSet<QString> &componentsToInstall) const
     if (autoDependOnList.isEmpty())
         return false;
 
-    QSet<QString> components = componentsToInstall;
-    const QStringList installedPackages = d->m_core->localInstalledPackages().keys();
-    foreach (const QString &name, installedPackages)
-        components.insert(name);
+    QHash<QString, QString> autoDependOn;
+    foreach (const QString &component, autoDependOnList) {
+        autoDependOn.insert(component.section(QChar::fromLatin1('-'), 0, 0),
+                component.section(QChar::fromLatin1('-'), 1));
+    }
 
-    foreach (const QString &component, components) {
-        autoDependOnList.removeAll(component);
-        if (autoDependOnList.isEmpty()) {
-            // If all components in the isAutoDependOn field are already installed or selected for
-            // installation, this component needs to be installed as well.
-            return true;
+    auto resolve = [&autoDependOn](const QString &name, const QString &version) -> bool {
+        if (autoDependOn.contains(name)) {
+            QString requiredVersion = autoDependOn.value(name);
+            if (requiredVersion.isEmpty() ||
+                    PackageManagerCore::versionMatches(version, requiredVersion)) {
+                autoDependOn.remove(name);
+                if (autoDependOn.isEmpty()) {
+                    // If all components in the isAutoDependOn field are already installed or selected for
+                    // installation, this component needs to be installed as well.
+                    return true;
+                }
+            }
         }
+        return false;
+    };
+
+    foreach (Component *component, componentsToInstall) {
+        if (resolve(component->name(), component->value(scVersion)))
+            return true;
+    }
+
+    const LocalPackagesHash installedPackages = d->m_core->localInstalledPackages();
+    foreach (const KDUpdater::LocalPackage &package, installedPackages) {
+        if (resolve(package.name, package.version))
+            return true;
     }
 
     return false;

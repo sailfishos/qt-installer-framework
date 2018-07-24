@@ -150,7 +150,8 @@ QStringList ComponentChecker::checkComponent(Component *component)
         }
         foreach (const QString &autoDependency, autoDependencies) {
             Component *autoDependencyComponent = PackageManagerCore::componentByName(
-                        autoDependency, allComponents);
+                        autoDependency.section(QChar::fromLatin1('-'), 0, 0),
+                        allComponents);
             if (autoDependencyComponent && autoDependencyComponent->childCount()) {
                 checkResult << QString::fromLatin1("Component %1 auto depends on component %2 "
                     "which has children components. This will not work properly.")

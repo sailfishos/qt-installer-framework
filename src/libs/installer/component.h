@@ -163,7 +163,7 @@ public:
     bool operationsCreatedSuccessfully() const;
 
     Q_INVOKABLE bool isDefault() const;
-    Q_INVOKABLE bool isAutoDependOn(const QSet<QString> &componentsToInstall) const;
+    Q_INVOKABLE bool isAutoDependOn(const QHash<QString, Component *> &componentsToInstall) const;
 
     Q_INVOKABLE void setInstalled();
     Q_INVOKABLE bool isInstalled(const QString version = QString()) const;
