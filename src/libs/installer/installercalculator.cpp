@@ -97,7 +97,7 @@ void InstallerCalculator::realAppendToInstallComponents(Component *component, co
 {
     if (!component->isInstalled(version) || component->updateRequested()) {
         m_orderedComponentsToInstall.append(component);
-        m_toInstallComponentIds.insert(component->name());
+        m_toInstallComponentIds.insert(component->name(), component);
     }
 }
 

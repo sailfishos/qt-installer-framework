@@ -70,7 +70,7 @@ private:
 
     QList<Component*> m_allComponents;
     QHash<Component*, QSet<Component*> > m_visitedComponents;
-    QSet<QString> m_toInstallComponentIds; //for faster lookups
+    QHash<QString, Component *> m_toInstallComponentIds; //for faster lookups
     QString m_componentsToInstallError;
     //calculate installation order variables
     QList<Component*> m_orderedComponentsToInstall;
