@@ -1332,9 +1332,6 @@ void PackageManagerCorePrivate::writeMaintenanceTool(OperationList performedOper
 #endif
         }
 
-        performedOperations = sortOperationsBasedOnComponentDependencies(performedOperations);
-        m_core->setValue(QLatin1String("installedOperationAreSorted"), QLatin1String("true"));
-
         try {
             QTemporaryFile file;
             QInstaller::openForWrite(&file);
@@ -1641,10 +1638,7 @@ bool PackageManagerCorePrivate::runPackageUpdater()
         QHash<QString, Component *> componentsByName;
 
         // order the operations in the right component dependency order
-        // next loop will save the needed operations in reverse order for uninstallation
-        OperationList performedOperationsOld = m_performedOperationsOld;
-        if (m_core->value(QLatin1String("installedOperationAreSorted")) != QLatin1String("true"))
-            performedOperationsOld = sortOperationsBasedOnComponentDependencies(m_performedOperationsOld);
+        OperationList performedOperationsOld = sortOperationsBasedOnComponentDependencies(m_performedOperationsOld);
 
         // build a list of undo operations based on the checked state of the component
         foreach (Operation *operation, performedOperationsOld) {
@@ -2391,9 +2385,9 @@ OperationList PackageManagerCorePrivate::sortOperationsBasedOnComponentDependenc
 
     const QRegExp dash(QLatin1String("-.*"));
     Graph<QString> componentGraph;  // create the complete component graph
-    foreach (const Component* node, m_core->components(PackageManagerCore::ComponentType::All)) {
-        componentGraph.addNode(node->name());
-        componentGraph.addEdges(node->name(), node->dependencies().replaceInStrings(dash, QString()));
+    foreach (const KDUpdater::LocalPackage &package, localInstalledPackages()) {
+        componentGraph.addNode(package.name);
+        componentGraph.addEdges(package.name, QStringList(package.dependencies).replaceInStrings(dash, QString()));
     }
 
     const QStringList resolvedComponents = componentGraph.sort();
