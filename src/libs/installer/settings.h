@@ -127,6 +127,11 @@ public:
     void addUserRepositories(const QSet<Repository> &repositories);
     Settings::Update updateUserRepositories(const RepoHash &updates);
 
+    QSet<Repository> virtualRepositories() const;
+    void setVirtualRepositories(const QSet<Repository> &repositories);
+    void addVirtualRepositories(const QSet<Repository> &repositories);
+    void removeVirtualRepositories(const QSet<Repository> &repositories);
+
     bool allowSpaceInPath() const;
     bool allowNonAsciiCharacters() const;
     bool disableAuthorizationFallback() const;

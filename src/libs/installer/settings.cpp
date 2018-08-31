@@ -51,6 +51,7 @@ static const QLatin1String scProductUrl("ProductUrl");
 static const QLatin1String scBackground("Background");
 static const QLatin1String scAdminTargetDir("AdminTargetDir");
 static const QLatin1String scMaintenanceToolName("MaintenanceToolName");
+static const QLatin1String scVirtualRepositories("VirtualRepositories");
 static const QLatin1String scUserRepositories("UserRepositories");
 static const QLatin1String scTmpRepositories("TemporaryRepositories");
 static const QLatin1String scMaintenanceToolIniFile("MaintenanceToolIniFile");
@@ -533,10 +534,13 @@ bool Settings::hasReplacementRepos() const
 
 QSet<Repository> Settings::repositories() const
 {
-    if (d->m_replacementRepos)
-        return variantListToSet<Repository>(d->m_data.values(scTmpRepositories));
+    if (d->m_replacementRepos) {
+        return variantListToSet<Repository>(d->m_data.values(scVirtualRepositories)
+            + d->m_data.values(scTmpRepositories));
+    }
 
     return variantListToSet<Repository>(d->m_data.values(scRepositories)
+        + d->m_data.values(scVirtualRepositories)
         + d->m_data.values(scUserRepositories) + d->m_data.values(scTmpRepositories));
 }
 
@@ -657,6 +661,41 @@ Settings::Update Settings::updateUserRepositories(const RepoHash &updates)
     if (updated)
         setUserRepositories(reposToUpdate.values().toSet());
     return updated ? Settings::UpdatesApplied : Settings::NoUpdatesApplied;
+}
+
+QSet<Repository> Settings::virtualRepositories() const
+{
+    return variantListToSet<Repository>(d->m_data.values(scVirtualRepositories));
+}
+
+void Settings::setVirtualRepositories(const QSet<Repository> &repositories)
+{
+    d->m_data.remove(scVirtualRepositories);
+    addVirtualRepositories(repositories);
+}
+
+void Settings::addVirtualRepositories(const QSet<Repository> &repositories)
+{
+    foreach (const Repository &repository, repositories)
+        d->m_data.insertMulti(scVirtualRepositories, QVariant().fromValue(repository));
+}
+
+void Settings::removeVirtualRepositories(const QSet<Repository> &repositories)
+{
+    QHash <QUrl, Repository> virtualRepos;
+    foreach (const QVariant &variant, d->m_data.values(scVirtualRepositories)) {
+        const Repository repository = variant.value<Repository>();
+        virtualRepos.insert(repository.url(), repository);
+    }
+
+    bool removed = false;
+    foreach (const Repository &repository, repositories) {
+        virtualRepos.remove(repository.url());
+        removed = true;
+    }
+
+    if (removed)
+        setVirtualRepositories(virtualRepos.values().toSet());
 }
 
 bool Settings::containsValue(const QString &key) const

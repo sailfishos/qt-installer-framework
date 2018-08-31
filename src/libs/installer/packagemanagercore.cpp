@@ -1400,6 +1400,36 @@ void PackageManagerCore::addUserRepositories(const QStringList &repositories)
 }
 
 /*!
+    Registers additional virtual \a repositories.
+
+    \sa {installer::addVirtualRepositories}{installer.addVirtualRepositories}
+    \sa setTemporaryRepositories()
+ */
+void PackageManagerCore::addVirtualRepositories(const QStringList &repositories)
+{
+    QSet<Repository> repositorySet;
+    foreach (const QString &repository, repositories)
+        repositorySet.insert(Repository::fromUserInput(repository));
+
+    settings().addVirtualRepositories(repositorySet);
+}
+
+/*!
+    Remove previously registered virtual \a repositories.
+
+    \sa {installer::removeVirtualRepositories}{installer.removeVirtualRepositories}
+    \sa setTemporaryRepositories()
+ */
+void PackageManagerCore::removeVirtualRepositories(const QStringList &repositories)
+{
+    QSet<Repository> repositorySet;
+    foreach (const QString &repository, repositories)
+        repositorySet.insert(Repository::fromUserInput(repository));
+
+    settings().removeVirtualRepositories(repositorySet);
+}
+
+/*!
     Sets additional \a repositories for this instance of the installer or updater
     if \a replace is \c false. Will be removed after invoking it again.
 

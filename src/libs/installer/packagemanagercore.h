@@ -177,6 +177,8 @@ public:
     void setTestChecksum(bool test);
 
     Q_INVOKABLE void addUserRepositories(const QStringList &repositories);
+    Q_INVOKABLE void addVirtualRepositories(const QStringList &repositories);
+    Q_INVOKABLE void removeVirtualRepositories(const QStringList &repositories);
     Q_INVOKABLE void setTemporaryRepositories(const QStringList &repositories,
                                               bool replace = false, bool compressed = false);
     Q_INVOKABLE void autoAcceptMessageBoxes();

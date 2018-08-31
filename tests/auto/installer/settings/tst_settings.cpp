@@ -83,6 +83,7 @@ void tst_Settings::loadTutorialConfig()
     QCOMPARE(settings.defaultRepositories(), QSet<Repository>());
     QCOMPARE(settings.temporaryRepositories(), QSet<Repository>());
     QCOMPARE(settings.userRepositories(), QSet<Repository>());
+    QCOMPARE(settings.virtualRepositories(), QSet<Repository>());
 
     QCOMPARE(settings.proxyType(), Settings::NoProxy);
     QCOMPARE(settings.ftpProxy(), QNetworkProxy());

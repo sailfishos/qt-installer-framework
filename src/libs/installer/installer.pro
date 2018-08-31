@@ -54,6 +54,7 @@ HEADERS += packagemanagercore.h \
     componentmodel.h \
     qinstallerglobal.h \
     qtpatch.h \
+    addvirtualrepositoriesoperation.h \
     consumeoutputoperation.h \
     replaceoperation.h \
     linereplaceoperation.h \
@@ -146,6 +147,7 @@ SOURCES += packagemanagercore.cpp \
     scriptengine.cpp \
     componentmodel.cpp \
     qtpatch.cpp \
+    addvirtualrepositoriesoperation.cpp \
     consumeoutputoperation.cpp \
     replaceoperation.cpp \
     linereplaceoperation.cpp \

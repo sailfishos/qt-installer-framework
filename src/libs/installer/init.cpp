@@ -27,6 +27,7 @@
 **************************************************************************/
 #include "init.h"
 
+#include "addvirtualrepositoriesoperation.h"
 #include "createshortcutoperation.h"
 #include "createdesktopentryoperation.h"
 #include "createlocalrepositoryoperation.h"
@@ -145,6 +146,7 @@ void QInstaller::init()
 #endif
 
     UpdateOperationFactory &factory = UpdateOperationFactory::instance();
+    factory.registerUpdateOperation<AddVirtualRepositoriesOperation>(QLatin1String("AddVirtualRepositories"));
     factory.registerUpdateOperation<CreateShortcutOperation>(QLatin1String("CreateShortcut"));
     factory.registerUpdateOperation<CreateDesktopEntryOperation>(QLatin1String("CreateDesktopEntry"));
     factory.registerUpdateOperation<CreateLocalRepositoryOperation>(QLatin1String("CreateLocalRepository"));
