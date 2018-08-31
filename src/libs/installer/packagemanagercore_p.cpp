@@ -830,6 +830,17 @@ void PackageManagerCorePrivate::writeMaintenanceConfigFiles()
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+
+            writer.writeStartElement(QLatin1String("VirtualRepositories"));
+            foreach (const Repository &repo, m_data.settings().virtualRepositories()) {
+                writer.writeStartElement(QLatin1String("Repository"));
+                    writer.writeTextElement(QLatin1String("Host"), repo.url().toString());
+                    writer.writeTextElement(QLatin1String("Username"), repo.username());
+                    writer.writeTextElement(QLatin1String("Password"), repo.password());
+                    writer.writeTextElement(QLatin1String("Enabled"), QString::number(repo.isEnabled()));
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
         writer.writeEndElement();
     }
     setDefaultFilePermissions(&file, DefaultFilePermissions::NonExecutable);
@@ -872,6 +883,8 @@ void PackageManagerCorePrivate::readMaintenanceConfigFiles(const QString &target
                             m_data.settings().setHttpProxy(readProxy(reader));
                         } else if (reader.name() == QLatin1String("Repositories")) {
                             m_data.settings().addUserRepositories(readRepositories(reader, false));
+                        } else if (reader.name() == QLatin1String("VirtualRepositories")) {
+                            m_data.settings().addVirtualRepositories(readRepositories(reader, false));
                         } else if (name == QLatin1String("ProxyType")) {
                             m_data.settings().setProxyType(Settings::ProxyType(reader.readElementText().toInt()));
                         } else {
