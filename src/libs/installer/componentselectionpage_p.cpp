@@ -87,6 +87,17 @@ ComponentSelectionPagePrivate::ComponentSelectionPagePrivate(ComponentSelectionP
     m_sizeLabel->setObjectName(QLatin1String("ComponentSizeLabel"));
     descriptionVLayout->addWidget(m_sizeLabel);
 
+    m_warnMixingAddRemoveLabel = new QLabel(q);
+    m_warnMixingAddRemoveLabel->setWordWrap(true);
+    descriptionVLayout->addStretch(1);
+    descriptionVLayout->addWidget(m_warnMixingAddRemoveLabel);
+    m_warnMixingAddRemoveLabel->setObjectName(QLatin1String("WarnMixingAddRemoveLabel"));
+    m_warnMixingAddRemoveLabel->setText(QLatin1String("<font color=\"red\">") +
+            ComponentSelectionPage::tr("Avoid removing components while adding other components "
+                "- this may break your installation.") +
+            QLatin1String("</font>"));
+    m_warnMixingAddRemoveLabel->hide();
+
     QHBoxLayout *buttonHLayout = new QHBoxLayout;
     m_checkDefault = new QPushButton;
     connect(m_checkDefault, &QAbstractButton::clicked,
@@ -485,6 +496,20 @@ void ComponentSelectionPagePrivate::onModelStateChanged(QInstaller::ComponentMod
     // update the current selected node (important to reflect possible sub-node changes)
     if (m_treeView->selectionModel())
         currentSelectedChanged(m_treeView->selectionModel()->currentIndex());
+
+    if (m_core->isPackageManager()) {
+        bool installationRequested = false;
+        bool uninstallationRequested = false;
+
+        foreach (Component *component, m_core->components(PackageManagerCore::ComponentType::AllNoReplacements)) {
+            installationRequested |= component->installationRequested();
+            uninstallationRequested |= component->uninstallationRequested();
+            if (installationRequested && uninstallationRequested)
+                break;
+        }
+
+        m_warnMixingAddRemoveLabel->setVisible(installationRequested && uninstallationRequested);
+    }
 }
 
 }  // namespace QInstaller

@@ -91,6 +91,7 @@ private:
     QTreeView *m_treeView;
     QLabel *m_sizeLabel;
     QLabel *m_descriptionLabel;
+    QLabel *m_warnMixingAddRemoveLabel;
     QPushButton *m_checkAll;
     QPushButton *m_uncheckAll;
     QPushButton *m_checkDefault;
