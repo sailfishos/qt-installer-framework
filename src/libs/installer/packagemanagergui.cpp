@@ -1887,6 +1887,17 @@ public:
         m_vlayout->addWidget(m_sizeLabel);
         m_sizeLabel->setObjectName(QLatin1String("ComponentSizeLabel"));
 
+        m_warnMixingAddRemoveLabel = new QLabel(q);
+        m_warnMixingAddRemoveLabel->setWordWrap(true);
+        m_vlayout->addStretch(1);
+        m_vlayout->addWidget(m_warnMixingAddRemoveLabel);
+        m_warnMixingAddRemoveLabel->setObjectName(QLatin1String("WarnMixingAddRemoveLabel"));
+        m_warnMixingAddRemoveLabel->setText(QLatin1String("<font color=\"red\">") +
+                ComponentSelectionPage::tr("Avoid removing components while adding other components "
+                    "- this may break your installation.") +
+                QLatin1String("</font>"));
+        m_warnMixingAddRemoveLabel->hide();
+
 #ifdef INSTALLCOMPRESSED
         allowCompressedRepositoryInstall();
 #endif
@@ -2131,6 +2142,20 @@ public slots:
         // update the current selected node (important to reflect possible sub-node changes)
         if (m_treeView->selectionModel())
             currentSelectedChanged(m_treeView->selectionModel()->currentIndex());
+
+        if (m_core->isPackageManager()) {
+            bool installationRequested = false;
+            bool uninstallationRequested = false;
+
+            foreach (Component *component, m_core->components(PackageManagerCore::ComponentType::AllNoReplacements)) {
+                installationRequested |= component->installationRequested();
+                uninstallationRequested |= component->uninstallationRequested();
+                if (installationRequested && uninstallationRequested)
+                    break;
+            }
+
+            m_warnMixingAddRemoveLabel->setVisible(installationRequested && uninstallationRequested);
+        }
     }
 
 public:
@@ -2142,6 +2167,7 @@ public:
     ComponentModel *m_currentModel;
     QLabel *m_sizeLabel;
     QLabel *m_descriptionLabel;
+    QLabel *m_warnMixingAddRemoveLabel;
     QPushButton *m_checkAll;
     QPushButton *m_uncheckAll;
     QPushButton *m_checkDefault;
