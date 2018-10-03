@@ -28,7 +28,9 @@
 
 #include "elevatedexecuteoperation.h"
 
+#include "constants.h"
 #include "environment.h"
+#include "packagemanagercore.h"
 #include "qprocesswrapper.h"
 
 #include <QtCore/QDebug>
@@ -116,6 +118,8 @@ bool ElevatedExecuteOperation::Private::run(const QStringList &arguments)
     if (args.last().endsWith(QLatin1String("showStandardError"))) {
         showStandardError = true;
         args.pop_back();
+    } else if (q->packageManager()->value(QStringLiteral("ExecuteOperationShowStandardError"), scFalse) == scTrue) {
+        showStandardError = true;
     }
 
     QList< int > allowedExitCodes;
