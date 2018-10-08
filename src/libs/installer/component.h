@@ -75,15 +75,41 @@ public:
     };
     Q_ENUM(UnstableError)
 
+    static int comparePriority(const Component *lhs, const Component *rhs)
+    {
+        const QString lhsPriority = lhs->value(scSortingPriority, QStringLiteral("0"));
+        const QString rhsPriority = rhs->value(scSortingPriority, QStringLiteral("0"));
+
+        bool lhsIntPriorityOk;
+        bool rhsIntPriorityOk;
+        const int lhsIntPriority = lhsPriority.toInt(&lhsIntPriorityOk);
+        const int rhsIntPriority = rhsPriority.toInt(&rhsIntPriorityOk);
+
+        int diff;
+        if (!lhsIntPriorityOk && !rhsIntPriorityOk) {
+            diff = KDUpdater::compareVersion(lhsPriority, rhsPriority);
+        } else if (lhsIntPriorityOk != rhsIntPriorityOk) {
+            if (lhsIntPriorityOk && lhsIntPriority <= 0)
+                diff = -1;
+            if (rhsIntPriorityOk && rhsIntPriority <= 0)
+                diff = +1;
+            else
+                diff = KDUpdater::compareVersion(lhsPriority, rhsPriority);
+        } else {
+            diff = lhsIntPriority - rhsIntPriority;
+        }
+
+        if (diff == 0)
+            diff = - QString::compare(lhs->displayName(), rhs->displayName());
+
+        return diff;
+    }
+
     struct SortingPriorityLessThan
     {
         bool operator() (const Component *lhs, const Component *rhs) const
         {
-            const int lhsPriority = lhs->value(scSortingPriority).toInt();
-            const int rhsPriority = rhs->value(scSortingPriority).toInt();
-            if (lhsPriority == rhsPriority)
-                return lhs->displayName() > rhs->displayName();
-            return lhsPriority < rhsPriority;
+            return Component::comparePriority(lhs, rhs) < 0;
         }
     };
 
@@ -91,11 +117,7 @@ public:
     {
         bool operator() (const Component *lhs, const Component *rhs) const
         {
-            const int lhsPriority = lhs->value(scSortingPriority).toInt();
-            const int rhsPriority = rhs->value(scSortingPriority).toInt();
-            if (lhsPriority == rhsPriority)
-                return lhs->displayName() < rhs->displayName();
-            return lhsPriority > rhsPriority;
+            return Component::comparePriority(lhs, rhs) > 0;
         }
     };
 
