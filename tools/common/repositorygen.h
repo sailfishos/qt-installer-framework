@@ -44,6 +44,8 @@ struct PackageInfo
     QString directory;
     QStringList dependencies;
     QStringList copiedFiles;
+    quint64 linkedFilesUncompressedSize = 0;
+    quint64 linkedFilesCompressedSize = 0;
 };
 typedef QVector<PackageInfo> PackageInfoVector;
 
