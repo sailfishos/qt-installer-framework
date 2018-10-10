@@ -45,13 +45,98 @@
 
 #include <QtCore/QDirIterator>
 #include <QtCore/QRegExp>
+#include <QtCore/QXmlStreamReader>
 
 #include <QtXml/QDomDocument>
 
 #include <iostream>
 
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#endif
+
 using namespace QInstaller;
 using namespace QInstallerTools;
+
+namespace {
+
+class ArchiveLink
+{
+public:
+    explicit ArchiveLink(const QString &path)
+        : m_path(path)
+    {
+        load();
+    }
+
+    bool isValid() const
+    {
+        return !m_target.isEmpty() && !m_target.isEmpty() && m_uncompressedSize != 0 &&
+            m_compressedSize != 0;
+    }
+
+    operator bool() const { return isValid(); }
+
+    QString path() const { return m_path; }
+    QString target() const { return m_target; }
+    QString sha1() const { return m_sha1; }
+    qint64 uncompressedSize() const { return m_uncompressedSize; }
+    qint64 compressedSize() const { return m_compressedSize; }
+
+private:
+    // Try to load the file at m_path. If the file is obviously not an ArchiveLink file, no error is
+    // reported beside that subsequent call to isValid() returns false. In other cases exception is
+    // thrown on errors.
+    void load()
+    {
+        QFileInfo info(m_path);
+        if (info.suffix() != QLatin1String("link"))
+            return;
+
+        QFile file(m_path);
+        if (!file.open(QIODevice::ReadOnly)) {
+            throw QInstaller::Error(QString::fromLatin1("Error opening file \"%1\" for reading: %2")
+                    .arg(m_path)
+                    .arg(file.errorString()));
+        }
+
+        QXmlStreamReader xml(&file);
+        if (xml.readNextStartElement() && xml.name() == QLatin1String("ArchiveLink")
+                && xml.attributes().value(QLatin1String("Version")) == QLatin1String("1.0")) {
+            while (xml.readNextStartElement()) {
+                if (xml.name() == QLatin1String("Target"))
+                    m_target = xml.readElementText();
+                else if (xml.name() == QLatin1String("SHA1"))
+                    m_sha1 = xml.readElementText();
+                else if (xml.name() == QLatin1String("UncompressedSize"))
+                    m_uncompressedSize = xml.readElementText().toInt();
+                else if (xml.name() == QLatin1String("CompressedSize"))
+                    m_compressedSize = xml.readElementText().toInt();
+                else
+                    xml.skipCurrentElement();
+            }
+        } else {
+            qWarning() << "Despite of the file extension this does not seem to be an ArchiveLink version 1.0 file:" << m_path;
+            return;
+        }
+        if (xml.hasError()) {
+            throw QInstaller::Error(QString::fromLatin1("Error parsing file \"%1\": %2")
+                    .arg(m_path)
+                    .arg(xml.errorString()));
+        }
+        if (!isValid())
+            throw QInstaller::Error(QString::fromLatin1("Incomplete or otherwise broken file \"%1\"").arg(m_path));
+    }
+
+private:
+    QString m_path;
+    QString m_target;
+    QString m_sha1;
+    qint64 m_uncompressedSize = 0;
+    qint64 m_compressedSize = 0;
+};
+
+} // namespace anonymous
 
 void QInstallerTools::printRepositoryGenOptions()
 {
@@ -256,6 +341,9 @@ void QInstallerTools::copyMetaData(const QString &_targetDir, const QString &met
                             componentSize += size;
                             compressedComponentSize += size;
                         }
+                    } else if (fi.isSymLink()) {
+                        // noop. The only way a symlink can appear here is through ArchiveLink in which
+                        // case the size is added below
                     } else if (Lib7z::isSupportedArchive(fi.filePath())) {
                         // if it's an archive already, list its files and sum the uncompressed sizes
                         QFile archive(fi.filePath());
@@ -278,6 +366,10 @@ void QInstallerTools::copyMetaData(const QString &_targetDir, const QString &met
                     // ignore, that's just about the sizes - and size doesn't matter, you know?
                 }
             }
+
+            // add size declared through ArchiveLink
+            componentSize += info.linkedFilesUncompressedSize;
+            compressedComponentSize += info.linkedFilesCompressedSize;
 
             QDomElement fileElement = doc.createElement(QLatin1String("UpdateFile"));
             fileElement.setAttribute(QLatin1String("UncompressedSize"), componentSize);
@@ -735,6 +827,28 @@ void QInstallerTools::copyComponentData(const QStringList &packageDirs, const QS
                                     .arg(QDir::toNativeSeparators(tmp.fileName()), QDir::toNativeSeparators(target), tmp.errorString()));
                             }
                             compressedFiles.append(target);
+                        } else if (ArchiveLink link = ArchiveLink(absoluteEntryFilePath)) {
+                            QString target = QString::fromLatin1("%1/%3%2").arg(namedRepoDir, fileInfo.completeBaseName(), info.version);
+                            qDebug() << "Creating archive link" << target << "to" << link.target() << "sha1 hash" << link.sha1();
+#ifdef Q_OS_WIN
+                            throw QInstaller::Error(QString::fromLatin1("Archive links not supported on Windows"));
+#else
+                            int result;
+                            result = symlink(link.target().toUtf8(), target.toUtf8());
+                            if (result != 0) {
+                                throw QInstaller::Error(QString::fromLatin1("Cannot create symbolic link \"%1\" to \"%2\" (error code %3)")
+                                        .arg(QDir::toNativeSeparators(target), QDir::toNativeSeparators(link.target()),
+                                            QString::number(result)));
+                            }
+#endif
+                            (*infos)[i].copiedFiles.append(target);
+                            (*infos)[i].linkedFilesUncompressedSize += link.uncompressedSize();
+                            (*infos)[i].linkedFilesCompressedSize += link.compressedSize();
+                            QFile hashFile(target + QLatin1String(".sha1"));
+                            QInstaller::openForWrite(&hashFile);
+                            hashFile.write(link.sha1().toUtf8());
+                            (*infos)[i].copiedFiles.append(hashFile.fileName());
+                            hashFile.close();
                         } else {
                             filesToCompress.append(absoluteEntryFilePath);
                         }

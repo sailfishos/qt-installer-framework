@@ -46,6 +46,8 @@ struct PackageInfo
     QStringList copiedFiles;
     QString metaFile;
     QString metaNode;
+    quint64 linkedFilesUncompressedSize = 0;
+    quint64 linkedFilesCompressedSize = 0;
 };
 typedef QVector<PackageInfo> PackageInfoVector;
 
