@@ -1,0 +1,9 @@
+# Apply this configuration with `git config --local include.path ../.gitconfig`
+
+[remote "upstream"]
+    url = git://code.qt.io/installer-framework/installer-framework.git
+    fetch = +refs/heads/*:refs/remotes/upstream/*
+
+[remote "gerrit"]
+    url = ssh://codereview.qt-project.org/installer-framework/installer-framework
+    fetch = +refs/heads/*:refs/remotes/gerrit/*
