@@ -132,7 +132,8 @@ HEADERS += packagemanagercore.h \
     lib7z_guid.h \
     lib7z_create.h \
     lib7z_extract.h \
-    lib7z_list.h
+    lib7z_list.h \
+    vmshutdownoperation.h
 
 SOURCES += packagemanagercore.cpp \
     packagemanagercore_p.cpp \
@@ -208,7 +209,8 @@ SOURCES += packagemanagercore.cpp \
     serverauthenticationdialog.cpp \
     keepaliveobject.cpp \
     systeminfo.cpp \
-    packagesource.cpp
+    packagesource.cpp \
+    vmshutdownoperation.cpp
 
 FORMS += proxycredentialsdialog.ui \
     serverauthenticationdialog.ui
