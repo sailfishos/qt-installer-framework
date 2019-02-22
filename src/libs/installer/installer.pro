@@ -134,7 +134,8 @@ HEADERS += packagemanagercore.h \
     lib7z_extract.h \
     lib7z_list.h \
     repositorycategory.h \
-    componentselectionpage_p.h
+    componentselectionpage_p.h \
+    vmshutdownoperation.h
 
 SOURCES += packagemanagercore.cpp \
     packagemanagercore_p.cpp \
@@ -212,7 +213,8 @@ SOURCES += packagemanagercore.cpp \
     systeminfo.cpp \
     packagesource.cpp \
     repositorycategory.cpp \
-    componentselectionpage_p.cpp
+    componentselectionpage_p.cpp \
+    vmshutdownoperation.cpp
 
 FORMS += proxycredentialsdialog.ui \
     serverauthenticationdialog.ui
