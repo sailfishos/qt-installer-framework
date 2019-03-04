@@ -279,7 +279,8 @@ private Q_SLOTS:
     void currentItemChanged(QListWidgetItem *current);
 
 private:
-    void addLicenseItem(const QHash<QString, QPair<QString, QString> > &hash);
+    void addLicenseItem(const QHash<QString, QVariantMap> &hash);
+    void createLicenseWidgets();
     void updateUi();
 
 private:
@@ -291,6 +292,8 @@ private:
 
     QLabel *m_acceptLabel;
     QLabel *m_rejectLabel;
+
+    QHash<QString, QVariantMap> m_licenseItems;
 };
 
 
