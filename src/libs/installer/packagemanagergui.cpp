@@ -1785,11 +1785,15 @@ void LicenseAgreementPage::entering()
     foreach (QInstaller::Component *component, packageManagerCore()->orderedComponentsToInstall())
         addLicenseItem(component->licenses());
 
+    createLicenseWidgets();
+
     const int licenseCount = m_licenseListWidget->count();
     if (licenseCount > 0) {
         m_licenseListWidget->setVisible(licenseCount > 1);
         m_licenseListWidget->setCurrentItem(m_licenseListWidget->item(0));
     }
+
+    m_licenseItems.clear();
 
     updateUi();
 }
@@ -1814,12 +1818,39 @@ void LicenseAgreementPage::currentItemChanged(QListWidgetItem *current)
         m_textBrowser->setText(current->data(Qt::UserRole).toString());
 }
 
-void LicenseAgreementPage::addLicenseItem(const QHash<QString, QPair<QString, QString> > &hash)
+void LicenseAgreementPage::addLicenseItem(const QHash<QString, QVariantMap> &hash)
 {
-    for (QHash<QString, QPair<QString, QString> >::const_iterator it = hash.begin();
+    for (QHash<QString, QVariantMap>::const_iterator it = hash.begin();
         it != hash.end(); ++it) {
-            QListWidgetItem *item = new QListWidgetItem(it.key(), m_licenseListWidget);
-            item->setData(Qt::UserRole, it.value().second);
+            if (!m_licenseItems.contains(it.key()))
+                m_licenseItems.insert(it.key(), it.value());
+    }
+}
+
+void LicenseAgreementPage::createLicenseWidgets()
+{
+    QStringList priorities;
+    QHash<QString, QMap<QString, QString>> priorityHash;
+
+    for (QString licenseName : m_licenseItems.keys()) {
+        QMap<QString, QString> licenses;
+        QString priority = m_licenseItems.value(licenseName).value(QLatin1String("priority")).toString();
+        licenses = priorityHash.value(priority);
+        licenses.insert(licenseName, m_licenseItems.value(licenseName).value(QLatin1String("content")).toString());
+        priorityHash.insert(priority, licenses);
+    }
+    priorities = priorityHash.keys();
+    priorities.sort();
+
+    for (int i = priorities.length() - 1; i >= 0; --i) {
+        QString priority = priorities.at(i);
+        QMap<QString, QString> licenses = priorityHash.value(priority);
+        QStringList licenseNames = licenses.keys();
+        licenseNames.sort(Qt::CaseInsensitive);
+        for (QString licenseName : licenseNames) {
+            QListWidgetItem *item = new QListWidgetItem(licenseName, m_licenseListWidget);
+            item->setData(Qt::UserRole, licenses.value(licenseName));
+        }
     }
 }
 
