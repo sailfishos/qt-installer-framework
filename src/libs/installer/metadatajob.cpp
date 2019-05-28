@@ -699,7 +699,7 @@ MetadataJob::Status MetadataJob::parseUpdatesXml(const QList<FileTaskResult> &re
 
                     if (ProductKeyCheck::instance()->isValidRepository(newRepository)) {
                         // store the new repository and the one old it replaces
-                        repositoryUpdates.insertMulti(action, qMakePair(newRepository, oldRepository));
+                        repositoryUpdates.insertMulti(action, qMakePair(oldRepository, newRepository));
                         qDebug() << "Replace repository" << oldRepository.displayname() << "with"
                             << newRepository.displayname();
                     }
