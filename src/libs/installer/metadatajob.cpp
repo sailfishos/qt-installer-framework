@@ -678,6 +678,8 @@ MetadataJob::Status MetadataJob::parseUpdatesXml(const QList<FileTaskResult> &re
                     repository.setUsername(el.attribute(QLatin1String("username")));
                     repository.setPassword(el.attribute(QLatin1String("password")));
                     repository.setDisplayName(el.attribute(QLatin1String("displayname")));
+                    repository.setEnabled(el.attribute(QLatin1String("enabled"), QLatin1String("1"))
+                            != QLatin1String("0"));
                     if (ProductKeyCheck::instance()->isValidRepository(repository)) {
                         repositoryUpdates.insertMulti(action, qMakePair(repository, Repository()));
                         qDebug() << "Repository to add:" << repository.displayname();
@@ -696,6 +698,8 @@ MetadataJob::Status MetadataJob::parseUpdatesXml(const QList<FileTaskResult> &re
                     newRepository.setUsername(el.attribute(QLatin1String("username")));
                     newRepository.setPassword(el.attribute(QLatin1String("password")));
                     newRepository.setDisplayName(el.attribute(QLatin1String("displayname")));
+                    newRepository.setEnabled(el.attribute(QLatin1String("enabled"), QLatin1String("1"))
+                            != QLatin1String("0"));
 
                     if (ProductKeyCheck::instance()->isValidRepository(newRepository)) {
                         // store the new repository and the one old it replaces
