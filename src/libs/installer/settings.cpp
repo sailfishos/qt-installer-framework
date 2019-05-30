@@ -566,10 +566,11 @@ static bool apply(const RepoHash &updates, QHash<QUrl, Repository> *reposToUpdat
     bool update = false;
     QList<QPair<Repository, Repository> > values = updates.values(QLatin1String("replace"));
     for (int a = 0; a < values.count(); ++a) {
-        const QPair<Repository, Repository> data = values.at(a);
+        QPair<Repository, Repository> data = values.at(a);
         if (reposToUpdate->contains(data.first.url())) {
             update = true;
-            reposToUpdate->remove(data.first.url());
+            const Repository oldRepo = reposToUpdate->take(data.first.url());
+            data.second.setEnabled(oldRepo.isEnabled() && data.second.isEnabled());
             reposToUpdate->insert(data.second.url(), data.second);
         }
     }
