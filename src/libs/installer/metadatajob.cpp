@@ -701,7 +701,9 @@ MetadataJob::Status MetadataJob::parseUpdatesXml(const QList<FileTaskResult> &re
                     newRepository.setEnabled(el.attribute(QLatin1String("enabled"), QLatin1String("1"))
                             != QLatin1String("0"));
 
-                    if (ProductKeyCheck::instance()->isValidRepository(newRepository)) {
+                    if (oldRepository.url() == newRepository.url()) {
+                        qDebug() << "Not replacing repository with itself" << oldRepository.displayname();
+                    } else if (ProductKeyCheck::instance()->isValidRepository(newRepository)) {
                         // store the new repository and the one old it replaces
                         repositoryUpdates.insertMulti(action, qMakePair(oldRepository, newRepository));
                         qDebug() << "Replace repository" << oldRepository.displayname() << "with"
