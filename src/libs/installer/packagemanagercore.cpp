@@ -422,9 +422,7 @@ void PackageManagerCore::writeMaintenanceTool()
             d->writeMaintenanceTool(d->m_performedOperationsOld + d->m_performedOperationsCurrentSession);
 
             bool gainedAdminRights = false;
-            QTemporaryFile tempAdminFile(d->targetDir()
-                + QLatin1String("/testjsfdjlkdsjflkdsjfldsjlfds") + QString::number(qrand() % 1000));
-            if (!tempAdminFile.open() || !tempAdminFile.isWritable()) {
+            if (!directoryWritable(d->targetDir())) {
                 gainAdminRights();
                 gainedAdminRights = true;
             }
@@ -1101,8 +1099,7 @@ void PackageManagerCore::networkSettingsChanged()
 
     if (isMaintainer() ) {
         bool gainedAdminRights = false;
-        QTemporaryFile tempAdminFile(d->targetDir() + QStringLiteral("/XXXXXX"));
-        if (!tempAdminFile.open() || !tempAdminFile.isWritable()) {
+        if (!directoryWritable(d->targetDir())) {
             gainAdminRights();
             gainedAdminRights = true;
         }
@@ -1602,6 +1599,16 @@ Component *PackageManagerCore::componentByName(const QString &name, const QList<
     }
 
     return 0;
+}
+
+bool PackageManagerCore::directoryWritable(const QString &path) const
+{
+    return d->directoryWritable(path);
+}
+
+bool PackageManagerCore::subdirectoriesWritable(const QString &path) const
+{
+    return d->subdirectoriesWritable(path);
 }
 
 /*!
