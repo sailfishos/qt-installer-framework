@@ -670,6 +670,20 @@ int PackageManagerCore::downloadNeededArchives(double partProgressSize)
     ProgressCoordinator::instance()->registerPartProgress(&archivesJob,
         SIGNAL(progressChanged(double)), partProgressSize);
 
+    // Print some progress information on console as well
+    connect(&archivesJob, &DownloadArchivesJob::outputTextChanged, [](const QString &progress) {
+        qDebug().noquote() << progress;
+    });
+    connect(&archivesJob, &DownloadArchivesJob::progressChanged,
+            [lastReported = -10, time = QTime::currentTime()](double progress) mutable {
+        int roughProgress = static_cast<int>(progress * 10) * 10;
+        if ((roughProgress > lastReported && time.elapsed() > 3000) || time.elapsed() > 15000) {
+            qDebug().nospace() << qMax(roughProgress, 1) << "% ...";
+            lastReported = roughProgress;
+            time.restart();
+        }
+    });
+
     archivesJob.start();
     archivesJob.waitForFinished();
 
