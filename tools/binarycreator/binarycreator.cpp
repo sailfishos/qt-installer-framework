@@ -419,7 +419,8 @@ static int assemble(Input input, const QInstaller::Settings &settings, const QSt
     }
 #endif
 
-    QTemporaryFile out;
+    QFile out(generateTemporaryFileName());
+
     QString targetName = input.outputPath;
 #ifdef Q_OS_OSX
     QDir resourcePath(QFileInfo(input.outputPath).dir());
@@ -480,7 +481,6 @@ static int assemble(Input input, const QInstaller::Settings &settings, const QSt
         QFile::remove(tempFile);
         return EXIT_FAILURE;
     }
-    out.setAutoRemove(false);
 
 #ifndef Q_OS_WIN
     chmod755(out.fileName());
