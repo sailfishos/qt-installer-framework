@@ -460,7 +460,10 @@ void Component::appendComponent(Component *component)
         std::sort(d->m_childComponents.begin(), d->m_childComponents.end(), SortingPriorityGreaterThan());
         d->m_allChildComponents = d->m_childComponents + virtualChildComponents;
     } else {
-        d->m_allChildComponents.append(component);
+        QList<Component *> virtualChildComponents = d->m_allChildComponents.mid(d->m_childComponents.count());
+        virtualChildComponents.append(component);
+        std::sort(virtualChildComponents.begin(), virtualChildComponents.end(), SortingPriorityGreaterThan());
+        d->m_allChildComponents = d->m_childComponents + virtualChildComponents;
     }
 
     if (Component *parent = component->parentComponent())
