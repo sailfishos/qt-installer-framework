@@ -3063,6 +3063,37 @@ bool PackageManagerCore::fetchUpdaterPackages(const PackagesList &remotes, const
 
             std::sort(d->m_updaterComponents.begin(), d->m_updaterComponents.end(),
                 Component::SortingPriorityGreaterThan());
+
+            auto dependencySort = [](QList<QInstaller::Component *> in) {
+                QSet<QString> inNames;
+                QList<QInstaller::Component *> out;
+
+                // std::transform cannot insert into QSet easily and std::set is inconvenient to use
+                for (Component *component : in)
+                    inNames.insert(component->name());
+
+                auto hasNoPendingDeps = [&](QInstaller::Component *component) {
+                    const QSet<QString> requiredNames = parseNames(component->dependencies()).toSet();
+                    return !requiredNames.intersects(inNames);
+                };
+
+                while (!in.isEmpty()) {
+                    const auto it = std::find_if(in.begin(), in.end(), hasNoPendingDeps);
+                    if (it == in.end()) {
+                        qCritical() << "Circular dependency between components - cannot sort";
+                        return out + in;
+                    }
+
+                    out.append(*it);
+                    inNames.remove((*it)->name());
+                    in.erase(it);
+                }
+
+                return out;
+            };
+
+            d->m_updaterComponents = dependencySort(d->m_updaterComponents);
+
         } else {
             // we have no updates, no need to store possible dependencies
             d->clearUpdaterComponentLists();
