@@ -270,6 +270,9 @@ void SettingsDialog::accept()
     newSettings.setUserRepositories((dynamic_cast<RepositoryItem*> (m_rootItems.at(2)))->repositories());
     settingsChanged |= (settings.userRepositories() != newSettings.userRepositories());
 
+    // copy virtual repositories
+    newSettings.setVirtualRepositories(settings.virtualRepositories());
+
     // update proxy type
     newSettings.setProxyType(Settings::NoProxy);
     if (m_ui->m_systemProxySettings->isChecked())
