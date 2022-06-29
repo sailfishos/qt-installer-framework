@@ -118,6 +118,10 @@ bool ElevatedExecuteOperation::Private::run(const QStringList &arguments)
     if (args.last().endsWith(QLatin1String("showStandardError"))) {
         showStandardError = true;
         args.pop_back();
+    } else if (args.last().startsWith(QLatin1String("showStandardError="))) {
+        const QString value = args.last().split(QLatin1Char('=')).last();
+        showStandardError = value == QLatin1String("true");
+        args.pop_back();
     } else if (q->packageManager()->value(QStringLiteral("ExecuteOperationShowStandardError"), scFalse) == scTrue) {
         showStandardError = true;
     }
