@@ -109,9 +109,9 @@ private:
                 else if (xml.name() == QLatin1String("SHA1"))
                     m_sha1 = xml.readElementText();
                 else if (xml.name() == QLatin1String("UncompressedSize"))
-                    m_uncompressedSize = xml.readElementText().toInt();
+                    m_uncompressedSize = xml.readElementText().toLongLong();
                 else if (xml.name() == QLatin1String("CompressedSize"))
-                    m_compressedSize = xml.readElementText().toInt();
+                    m_compressedSize = xml.readElementText().toLongLong();
                 else
                     xml.skipCurrentElement();
             }
