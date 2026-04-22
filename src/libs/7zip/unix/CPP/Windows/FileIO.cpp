@@ -25,6 +25,17 @@
 #define GENERIC_READ	0x80000000
 #define GENERIC_WRITE	0x40000000
 
+class Umask
+{
+  public:
+  mode_t  mask;
+  Umask() {
+    mask = umask (0);  /* get and set the umask */
+    umask(mask);       /* restore the umask */
+  }
+};
+
+static Umask gbl_umask;
 extern BOOLEAN WINAPI RtlTimeToSecondsSince1970( const LARGE_INTEGER *Time, DWORD *Seconds );
 
 namespace NWindows {
@@ -53,9 +64,7 @@ bool CFileBase::Create(LPCSTR filename, DWORD dwDesiredAccess,
 #endif
 
   /* now use the umask value */
-  int mask = umask(0);
-  (void)umask(mask);
-  int mode = 0666 & ~(mask & 066); /* keep the R/W for the user */
+  int mode = 0666 & ~(gbl_umask.mask & 066); /* keep the R/W for the user */
 
   if (dwDesiredAccess & GENERIC_WRITE) flags |= O_WRONLY;
   if (dwDesiredAccess & GENERIC_READ)  flags |= O_RDONLY;
